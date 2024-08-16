@@ -23,7 +23,7 @@ python3.x
 
 - **把下载的脚本文件移到目录里**
 
-  `mv impl.py ~/bin/autocpp`
+  `mv autocpp.py ~/bin/autocpp`
 
 - **修改脚本权限**
 
