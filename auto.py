@@ -25,23 +25,26 @@ def generate_implementation(header_file, output_dir, include_dir):
         for line in lines:
             stripped_line = line.strip()
 
+            # 忽略 using 别名定义
+            if stripped_line.startswith('using '):
+                continue
+
             # 检查是否为类声明
             if stripped_line.startswith('class '):
                 class_name = stripped_line.split()[1].split('{')[0].strip()
 
             # 检查是否为函数声明
             if stripped_line.endswith(';') and '(' in stripped_line and ')' in stripped_line:
-                # 处理修饰符 (如 explicit, virtual)
+                # 处理修饰符 (如 explicit, virtual) 并将其忽略
                 parts = stripped_line.split()
-                modifiers = []
                 return_type = ""
                 func_name = ""
                 params = ""
 
-                # 提取修饰符、返回类型、函数名和参数列表
+                # 提取返回类型、函数名和参数列表
                 for part in parts:
                     if part in ('explicit', 'virtual', 'inline', 'static', 'constexpr'):
-                        modifiers.append(part)
+                        continue  # 忽略这些关键字
                     elif '(' in part:  # 检测到函数名开始
                         func_name = part.split('(')[0]
                         params = stripped_line.split(func_name)[1]
@@ -50,10 +53,9 @@ def generate_implementation(header_file, output_dir, include_dir):
                         return_type += part + " "
 
                 return_type = return_type.strip()
-                modifiers_str = " ".join(modifiers)
 
                 # 构建函数实现字符串
-                func_impl = f'{modifiers_str} {return_type} {class_name}::{func_name}{params}'
+                func_impl = f'{return_type} {class_name}::{func_name}{params}'
                 func_impl = func_impl.replace(';', ' {\n\n}\n')
 
                 f.write(func_impl + '\n')
@@ -82,4 +84,3 @@ if __name__ == '__main__':
     else:
         for header_file in header_files:
             generate_implementation(header_file, output_dir, include_dir)
-
