@@ -38,3 +38,7 @@ python3.x
 - **运行配置文件**
 
   运行 `source ~/.bashrc` 或 `source ~/.zshrc`
+
+## *<span style="color:#FF0000;">注意</span>*
+
+生成的实现文件不是完全正确的，不是完整的，需要做一些简单调整。
