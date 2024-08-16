@@ -2,13 +2,15 @@
 # coding=utf-8
 import os
 import glob
+import argparse
 
-def generate_implementation(header_file):
-    impl_file = header_file.replace('.h', '.cpp')
+def generate_implementation(header_file, output_dir, include_dir):
+    # 构建实现文件的路径
+    impl_file = os.path.join(output_dir, os.path.basename(header_file).replace('.h', '.cpp'))
 
     # 检查实现文件是否已经存在
     if os.path.exists(impl_file):
-        print("Skipped: {} already exists.".format(impl_file))
+        print(f"Skipped: {impl_file} already exists.")
         return
     
     with open(header_file, 'r') as f:
@@ -16,7 +18,8 @@ def generate_implementation(header_file):
 
     with open(impl_file, 'w') as f:
         # 生成包含头文件的 include 语句
-        f.write('#include "{}"\n\n'.format(header_file))
+        include_path = os.path.join(include_dir, os.path.basename(header_file))
+        f.write('#include "{}"\n\n'.format(include_path))
 
         class_name = None
         for line in lines:
@@ -50,14 +53,27 @@ def generate_implementation(header_file):
                 modifiers_str = " ".join(modifiers)
 
                 # 构建函数实现字符串
-                func_impl = '{} {} {}::{}{}'.format(modifiers_str, return_type, class_name, func_name, params)
+                func_impl = f'{modifiers_str} {return_type} {class_name}::{func_name}{params}'
                 func_impl = func_impl.replace(';', ' {\n\n}\n')
 
                 f.write(func_impl + '\n')
 
-    print("Generated implementation file: {}".format(impl_file))
+    print(f"Generated implementation file: {impl_file}")
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Generate .cpp implementation files from .h header files.")
+    parser.add_argument('-d', '--directory', action='store_true', help="Place implementation files in ../src directory.")
+    
+    args = parser.parse_args()
+
+    if args.directory:
+        output_dir = os.path.join('..', 'src')
+        include_dir = '../include'
+        os.makedirs(output_dir, exist_ok=True)
+    else:
+        output_dir = '.'
+        include_dir = '.'
+
     # 使用 glob 模块查找当前目录下所有 .h 文件
     header_files = glob.glob('*.h')
     
@@ -65,5 +81,5 @@ if __name__ == '__main__':
         print("No header files found in the current directory.")
     else:
         for header_file in header_files:
-            generate_implementation(header_file)
+            generate_implementation(header_file, output_dir, include_dir)
 
